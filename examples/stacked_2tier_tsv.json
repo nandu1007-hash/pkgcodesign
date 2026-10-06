@@ -1,0 +1,25 @@
+{
+  "schema": "xtco.package_model.v1",
+  "name": "2-tier logic+memory stack with TSV/Cu pillars (Phase-1 benchmark)",
+  "domain_um": [1000, 1000],
+  "mesh": {"nx": 20, "ny": 20},
+  "layers": [
+    {"name": "substrate",  "material": "organic_substrate", "thickness_um": 200, "nz": 2},
+    {"name": "c4_underfill","material": "underfill",        "thickness_um": 60,  "nz": 1,
+     "tsv": {"material": "copper", "pitch_cells": 4, "offset_cells": 1}},
+    {"name": "logic_die",  "material": "silicon",           "thickness_um": 100, "nz": 3,
+     "tsv": {"material": "copper", "pitch_cells": 4, "offset_cells": 1}},
+    {"name": "bond_layer", "material": "underfill",         "thickness_um": 20,  "nz": 1,
+     "tsv": {"material": "copper", "pitch_cells": 4, "offset_cells": 1}},
+    {"name": "memory_die", "material": "silicon",           "thickness_um": 100, "nz": 3},
+    {"name": "tim",        "material": "tim",               "thickness_um": 50,  "nz": 1},
+    {"name": "lid",        "material": "copper",            "thickness_um": 300, "nz": 2}
+  ],
+  "heat_sources": [
+    {"name": "logic_core_hotspot", "layer": "logic_die", "cell_layer": "bottom", "rect_um": [100, 100, 450, 450], "power_W": 0.30},
+    {"name": "logic_background",   "layer": "logic_die", "cell_layer": "bottom", "rect_um": [0, 0, 1000, 1000],   "power_W": 0.15},
+    {"name": "memory_array",       "layer": "memory_die", "cell_layer": "bottom", "rect_um": [0, 0, 1000, 1000],  "power_W": 0.15}
+  ],
+  "boundary": {"t_ambient_C": 25.0, "h_top": 15000.0, "h_bottom": 100.0},
+  "thermomech": {"t_ref_C": 25.0, "t_reflow_C": 217.0, "t_room_C": 25.0}
+}

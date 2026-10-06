@@ -1,0 +1,9 @@
+{
+  "schema": "xtco.device_power.v1",
+  "source_track": "Track 1/3 (device-level)",
+  "blocks": [
+    {"name": "cpu_cluster", "layer": "logic_die", "rect_um": [100, 100, 450, 450], "power_W": 0.40},
+    {"name": "uncore",      "layer": "logic_die", "rect_um": [0, 0, 1000, 1000],   "power_W": 0.15},
+    {"name": "dram_stack",  "layer": "memory_die", "rect_um": [0, 0, 1000, 1000],  "power_W": 0.12}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "xtco.materials.v1",
+  "units": {"k": "W/(m.K)", "cte": "ppm/K", "E": "GPa", "nu": "-", "rho": "kg/m3", "cp": "J/(kg.K)"},
+  "status": "INDICATIVE handbook-level room-temperature values. Every entry must be traced to NIST/CINDAS/vendor datasheets by the Material Database sub-team before use in validation.",
+  "materials": {
+    "silicon":            {"k": 148.0, "cte": 2.6,  "E": 130.0, "nu": 0.28, "rho": 2329, "cp": 700,  "k_exp": -1.3, "source": "TODO: CINDAS / NIST (indicative)", "confidence": "low"},
+    "copper":             {"k": 398.0, "cte": 17.0, "E": 117.0, "nu": 0.34, "rho": 8960, "cp": 385,  "k_exp": 0.0,  "source": "TODO: CINDAS / NIST (indicative)", "confidence": "low"},
+    "sio2_beol":          {"k": 1.4,   "cte": 0.5,  "E": 70.0,  "nu": 0.17, "rho": 2200, "cp": 730,  "k_exp": 0.0,  "source": "TODO: literature (indicative)", "confidence": "low"},
+    "sac305_solder":      {"k": 58.0,  "cte": 21.5, "E": 50.0,  "nu": 0.36, "rho": 7400, "cp": 230,  "k_exp": 0.0,  "source": "TODO: literature (indicative)", "confidence": "low"},
+    "underfill":          {"k": 0.6,   "cte": 30.0, "E": 8.0,   "nu": 0.30, "rho": 1700, "cp": 1000, "k_exp": 0.0,  "source": "TODO: vendor datasheet (below Tg)", "confidence": "low"},
+    "organic_substrate":  {"k": 0.8,   "cte": 15.0, "E": 25.0,  "nu": 0.30, "rho": 1900, "cp": 900,  "k_exp": 0.0,  "source": "TODO: isotropic effective value; real substrates are anisotropic", "confidence": "low"},
+    "mold_compound":      {"k": 0.9,   "cte": 10.0, "E": 20.0,  "nu": 0.30, "rho": 1900, "cp": 900,  "k_exp": 0.0,  "source": "TODO: vendor datasheet (below Tg)", "confidence": "low"},
+    "tim":                {"k": 5.0,   "cte": 100.0,"E": 0.1,   "nu": 0.45, "rho": 2500, "cp": 1000, "k_exp": 0.0,  "source": "TODO: vendor datasheet", "confidence": "low"}
+  }
+}
