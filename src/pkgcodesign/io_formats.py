@@ -100,6 +100,11 @@ def save_results_h5(path: str, grid: StackGrid, result: dict, spec: Optional[dic
                 s.attrs[key] = result[key]
         if "T" in result:
             s.attrs["T_max_C"] = float(np.max(result["T"]))
+        ti = result.get("thermal_info")
+        if ti is not None:  # solver diagnostics, so a result file records how the T field was obtained
+            s.attrs["thermal_iterations"] = int(ti["iterations"])
+            s.attrs["thermal_residual_K"] = float(ti["residual"])
+            s.attrs["thermal_converged"] = int(bool(ti["converged"]))
 
 
 def load_results_h5(path: str) -> dict:

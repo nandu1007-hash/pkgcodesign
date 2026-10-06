@@ -37,3 +37,20 @@ def test_temperature_dependent_k_runs_hotter():
     T_c, _ = solve_thermal(g, src, temperature_dependent=False)
     T_v, info = solve_thermal(g, src, temperature_dependent=True)
     assert T_v.max() > T_c.max() and info["residual"] < 1e-6
+
+
+def test_nonconvergence_raises():
+    """Regression for C5: the Picard loop used to return silently after max_iter."""
+    import pytest
+    from pkgcodesign.thermal import ConvergenceError
+    g = build_grid(slab_spec())
+    src = [{"layer": "slab", "cell_layer": "bottom", "rect_um": [0, 0, 1000, 1000], "power_W": 0.5}]
+    with pytest.raises(ConvergenceError):
+        solve_thermal(g, src, temperature_dependent=True, max_iter=1, tol=1e-12)
+
+
+def test_info_reports_convergence():
+    g = build_grid(slab_spec())
+    src = [{"layer": "slab", "cell_layer": "bottom", "rect_um": [0, 0, 1000, 1000], "power_W": 0.5}]
+    _, info = solve_thermal(g, src, temperature_dependent=True)
+    assert info["converged"] is True and info["iterations"] >= 2 and info["residual"] < 1e-6

@@ -84,13 +84,22 @@ def distribute_sources(grid: StackGrid, sources: List[dict]) -> np.ndarray:
     return q
 
 
+class ConvergenceError(RuntimeError):
+    """Picard iteration on k(T) did not reach tol. The last iterate is kept in `.T` for inspection."""
+
+    def __init__(self, message: str, T: np.ndarray):
+        super().__init__(message)
+        self.T = T
+
+
 def solve_thermal(grid: StackGrid, sources: List[dict], t_ambient: float = DEFAULT_BC.t_ambient_C,
                   h_top: float = DEFAULT_BC.h_top, h_bottom: float = DEFAULT_BC.h_bottom,
                   T_guess: Optional[np.ndarray] = None, k_cell: Optional[np.ndarray] = None,
                   temperature_dependent: bool = True, tol: float = 1e-6, max_iter: int = 30):
     """Solve steady-state T [deg C]. Picard iteration on k(T) when temperature_dependent.
 
-    Returns (T, info) with T of shape (nx, ny, nz).
+    Returns (T, info) with T of shape (nx, ny, nz) and info = {iterations, residual, converged}.
+    Raises ConvergenceError if the Picard iteration does not reach `tol` within `max_iter`.
     """
     q = distribute_sources(grid, sources).ravel()
     g = boundary_conductance(grid, h_top, h_bottom)
@@ -101,11 +110,11 @@ def solve_thermal(grid: StackGrid, sources: List[dict], t_ambient: float = DEFAU
         return spla.spsolve(K.tocsc(), rhs).reshape(grid.shape)
 
     if k_cell is not None:
-        return solve_with(k_cell), {"iterations": 1, "residual": 0.0}
+        return solve_with(k_cell), {"iterations": 1, "residual": 0.0, "converged": True}
 
     T = np.full(grid.shape, t_ambient) if T_guess is None else T_guess
     if not temperature_dependent:
-        return solve_with(grid.cell_property(lambda m: m.k)), {"iterations": 1, "residual": 0.0}
+        return solve_with(grid.cell_property(lambda m: m.k)), {"iterations": 1, "residual": 0.0, "converged": True}
 
     res = np.inf
     for it in range(1, max_iter + 1):
@@ -117,5 +126,7 @@ def solve_thermal(grid: StackGrid, sources: List[dict], t_ambient: float = DEFAU
         res = float(np.max(np.abs(T_new - T)))
         T = T_new
         if res < tol:
-            break
-    return T, {"iterations": it, "residual": res}
+            return T, {"iterations": it, "residual": res, "converged": True}
+    raise ConvergenceError(
+        f"Picard iteration on k(T) did not converge in {max_iter} iterations "
+        f"(last max|dT| = {res:.3g} K, tol = {tol:g} K)", T)
