@@ -26,8 +26,8 @@ def test_bimaterial_curvature_matches_timoshenko():
     from pkgcodesign import MaterialDB
     db = MaterialDB()
     nu = 0.3
-    db.add(Material("A", k=1, cte=3.0, E=130, nu=nu, rho=1, cp=1))
-    db.add(Material("B", k=1, cte=17.0, E=70, nu=nu, rho=1, cp=1))
+    db.add(Material("A", k=1, cte=3.0, E=130, nu=nu, rho=1000, cp=1000))
+    db.add(Material("B", k=1, cte=17.0, E=70, nu=nu, rho=1000, cp=1000))
     L, t1, t2, dT = 2000e-6, 100e-6, 100e-6, 150.0
     spec = {"domain_um": [L * 1e6, L * 1e6], "mesh": {"nx": 8, "ny": 8},
             "layers": [{"name": "a", "material": "A", "thickness_um": 100, "nz": 3},

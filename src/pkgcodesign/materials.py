@@ -42,13 +42,26 @@ class Material:
         return self.E * 1e9
 
     def validate(self) -> Iterable[str]:
+        """Plausibility checks in the units of UNITS (the stated units, not SI).
+
+        The bounds are deliberately wide, so they only catch unit mistakes (1/K written where
+        ppm/K is expected, g/cm3 written where kg/m3 is expected, Pa written where GPa is expected).
+        They are not a substitute for provenance checks.
+        """
         problems = []
-        if not (self.k > 0): problems.append(f"{self.name}: k must be > 0")
-        if not (0.0 < self.E < 1500): problems.append(f"{self.name}: E out of range [GPa]")
+        if not (0 < self.k <= 3000): problems.append(f"{self.name}: k out of range [W/(m.K)]")
+        if not (0.01 <= self.E < 1500): problems.append(f"{self.name}: E out of range [GPa]")
         if not (-0.99 < self.nu < 0.5): problems.append(f"{self.name}: nu must be in (-1, 0.5)")
-        if not (0 <= self.cte < 500): problems.append(f"{self.name}: cte out of range [ppm/K]")
-        if not (self.rho > 0 and self.cp > 0): problems.append(f"{self.name}: rho/cp must be > 0")
+        if not (0.01 <= self.cte < 500): problems.append(f"{self.name}: cte out of range [ppm/K]")
+        if not (100 <= self.rho <= 30000): problems.append(f"{self.name}: rho out of range [kg/m3]")
+        if not (100 <= self.cp <= 10000): problems.append(f"{self.name}: cp out of range [J/(kg.K)]")
         return problems
+
+
+# Units every entry in a materials file is written in. A file that declares different units is
+# rejected, because the numbers would be silently wrong.
+UNITS = {"k": "W/(m.K)", "cte": "ppm/K", "E": "GPa", "nu": "-", "rho": "kg/m3", "cp": "J/(kg.K)"}
+MATERIALS_SCHEMA = "xtco.materials.v1"
 
 
 class MaterialDB:
@@ -67,6 +80,10 @@ class MaterialDB:
 
     @classmethod
     def from_dict(cls, d: dict) -> "MaterialDB":
+        if d.get("schema") != MATERIALS_SCHEMA:
+            raise ValueError(f"materials schema must be '{MATERIALS_SCHEMA}', got {d.get('schema')!r}")
+        if d.get("units") != UNITS:
+            raise ValueError(f"materials units must be {UNITS}, got {d.get('units')}")
         db = cls()
         for name, p in d["materials"].items():
             db.add(Material(name=name, **p))
@@ -88,7 +105,7 @@ class MaterialDB:
         return sorted(self._m)
 
     def to_json(self, path: str) -> None:
-        out = {"schema": "xtco.materials.v1",
+        out = {"schema": MATERIALS_SCHEMA, "units": UNITS,
                "materials": {n: {k: v for k, v in asdict(m).items() if k != "name"} for n, m in self._m.items()}}
         with open(path, "w") as f:
             json.dump(out, f, indent=2)
