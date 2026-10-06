@@ -12,6 +12,7 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
+from .boundary import DEFAULT_BC
 from .mesh import StackGrid
 
 
@@ -83,8 +84,8 @@ def distribute_sources(grid: StackGrid, sources: List[dict]) -> np.ndarray:
     return q
 
 
-def solve_thermal(grid: StackGrid, sources: List[dict], t_ambient: float = 25.0,
-                  h_top: float = 3000.0, h_bottom: float = 100.0,
+def solve_thermal(grid: StackGrid, sources: List[dict], t_ambient: float = DEFAULT_BC.t_ambient_C,
+                  h_top: float = DEFAULT_BC.h_top, h_bottom: float = DEFAULT_BC.h_bottom,
                   T_guess: Optional[np.ndarray] = None, k_cell: Optional[np.ndarray] = None,
                   temperature_dependent: bool = True, tol: float = 1e-6, max_iter: int = 30):
     """Solve steady-state T [deg C]. Picard iteration on k(T) when temperature_dependent.

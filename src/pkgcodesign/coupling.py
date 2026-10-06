@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .boundary import BoundaryConditions
 from .mesh import StackGrid
 from .thermal import solve_thermal
 from .mechanical import solve_mechanical
@@ -17,9 +18,9 @@ def solve_coupled(grid: StackGrid, spec: dict, scheme: str = "iterative") -> dic
         raise NotImplementedError("Monolithic coupled solve is a Phase 2 deliverable; use scheme='iterative'.")
     if scheme != "iterative":
         raise ValueError(f"unknown scheme '{scheme}'")
-    bc = spec["boundary"]
-    T, tinfo = solve_thermal(grid, spec["heat_sources"], t_ambient=bc["t_ambient_C"],
-                             h_top=bc["h_top"], h_bottom=bc["h_bottom"])
+    bc = BoundaryConditions.from_spec(spec)
+    T, tinfo = solve_thermal(grid, spec["heat_sources"], t_ambient=bc.t_ambient_C,
+                             h_top=bc.h_top, h_bottom=bc.h_bottom)
     t_ref = spec["thermomech"]["t_ref_C"]
     mech = solve_mechanical(grid, T, t_ref)
     return {"T": T, "thermal_info": tinfo, **mech}

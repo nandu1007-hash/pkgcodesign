@@ -15,13 +15,16 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
+from .boundary import DEFAULT_BC, BoundaryConditions
 from .mesh import StackGrid
 from .thermal import assemble_conduction, boundary_conductance, distribute_sources
 
 
 class ThermalROM:
-    def __init__(self, grid: StackGrid, sources: List[dict], t_ambient=25.0, h_bottom=100.0):
-        self.grid, self.sources, self.t_amb, self.h_bot = grid, sources, t_ambient, h_bottom
+    def __init__(self, grid: StackGrid, sources: List[dict], bc: BoundaryConditions = DEFAULT_BC):
+        """`bc` must be the same object the full-order solve uses (h_top is a sampled parameter)."""
+        self.grid, self.sources = grid, sources
+        self.t_amb, self.h_bot = bc.t_ambient_C, bc.h_bottom
         self.K0 = assemble_conduction(grid, grid.cell_property(lambda m: m.k)).tocsr()
         self.Htop = sp.diags(boundary_conductance(grid, 1.0, 0.0))
         self.Hbot = sp.diags(boundary_conductance(grid, 0.0, 1.0))

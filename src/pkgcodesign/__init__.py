@@ -1,4 +1,5 @@
 """pkgcodesign: open-source package-level thermo-mechanical co-design framework."""
+from .boundary import BoundaryConditions
 from .materials import Material, MaterialDB
 from .mesh import StackGrid, build_grid
 from .thermal import solve_thermal
@@ -8,6 +9,6 @@ from .rom import ThermalROM
 
 __version__ = "0.1.0"
 __all__ = [
-    "Material", "MaterialDB", "StackGrid", "build_grid", "solve_thermal",
+    "BoundaryConditions", "Material", "MaterialDB", "StackGrid", "build_grid", "solve_thermal",
     "solve_mechanical", "solve_coupled", "solve_reflow", "ThermalROM",
 ]

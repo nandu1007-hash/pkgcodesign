@@ -9,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from pkgcodesign import build_grid, solve_coupled, solve_reflow, ThermalROM
+from pkgcodesign.boundary import BoundaryConditions
 from pkgcodesign.io_formats import load_package_model
 
 HERE = os.path.dirname(__file__)
@@ -41,7 +42,7 @@ ax.set_title("Reflow warpage, substrate bottom (um)", fontsize=9)
 fig.colorbar(im, ax=ax, label="plane-fit residual [um]"); fig.tight_layout(); fig.savefig(os.path.join(OUT, "warpage_map.png")); plt.close(fig)
 
 # 3) ROM
-rom = ThermalROM(grid, spec["heat_sources"]).train(n_samples=60)
+rom = ThermalROM(grid, spec["heat_sources"], bc=BoundaryConditions.from_spec(spec)).train(n_samples=60)
 rep = rom.validate(n_test=20)
 print("ROM:", rep)
 fig, ax = plt.subplots(figsize=(4.2, 3.4), dpi=200)
