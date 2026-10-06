@@ -12,14 +12,14 @@ something runnable to extend.
 |---|---|---|
 | FEM Solver Abstraction | `mesh.py` | Structured hex stack builder, TSV/Cu-pillar lattice. Unstructured meshing: planned |
 | Material Database | `materials.py`, `data/materials_initial.json` | 8 materials, schema + validation. Values need NIST/CINDAS traceability |
-| Thermo-Mechanical Coupling | `thermal.py`, `mechanical.py`, `coupling.py` | FV heat conduction with k(T); Hex8 + incompatible-modes linear elasticity; staggered coupling. Monolithic: stub |
+| Thermo-Mechanical Coupling | `thermal.py`, `mechanical.py`, `coupling.py` | FV heat conduction with k(T); Hex8 + incompatible-modes linear elasticity; one-way thermal→mechanical coupling (`scheme="one_way"`). Monolithic: stub |
 | Reduced-Order Modeling | `rom.py` | POD-Galerkin parametric thermal ROM (power scales, h_top) |
 | Interfaces | `io_formats.py`, `cli.py` | JSON in, HDF5 out, schema validation, device-power hand-off from Tracks 1/3 |
 
 ## Quick start
 ```bash
 pip install -e ".[dev]"
-pytest -q                                   # 20 tests (energy balance, 1-D analytic, Timoshenko bilayer, ROM, I/O, input validation)
+pytest -q                                   # full suite (energy balance, 1-D analytic, Timoshenko bilayer, ROM, I/O, validation, units, BCs, coupling)
 python examples/run_reference_case.py       # figures -> docs/figures
 pkgcodesign run examples/stacked_2tier_tsv.json --out op.h5
 pkgcodesign run examples/stacked_2tier_tsv.json --reflow --out reflow.h5
@@ -36,6 +36,7 @@ pkgcodesign run examples/stacked_2tier_tsv.json --device-power examples/device_p
 * TSVs are resolved cell-by-cell on a coarse lattice, not homogenised; no sub-grid effects.
 * Convective film is applied at the cell centre (keeps the operator affine for the ROM).
 * ROM is for constant-k thermal problems; nonlinear k(T) needs hyper-reduction.
+* Coupling is one-way: temperature is solved first, then stress and warpage. Displacement does not feed back into temperature, so there is no coupling iteration. The only iteration is the Picard loop on k(T). Two-way (monolithic) coupling is a Phase 2 item and needs a feedback physics to justify it.
 * Python/NumPy backend. C++ backend and GPU assembly are Phase 2/3 items.
 
 ## Layout
