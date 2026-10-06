@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import json
 import platform
+from importlib import resources
+from functools import lru_cache
 from typing import Optional
 
 import h5py
+import jsonschema
 import numpy as np
 
 from .mesh import StackGrid
@@ -25,19 +28,28 @@ class SchemaError(ValueError):
     pass
 
 
+@lru_cache(maxsize=None)
+def _package_model_schema() -> dict:
+    path = resources.files("pkgcodesign.schemas").joinpath("package_model.v1.schema.json")
+    with path.open("r") as f:
+        return json.load(f)
+
+
 def validate_package_model(spec: dict) -> None:
-    if spec.get("schema") != PACKAGE_SCHEMA:
-        raise SchemaError(f"schema must be '{PACKAGE_SCHEMA}'")
-    for key in ("domain_um", "mesh", "layers", "heat_sources"):
-        if key not in spec:
-            raise SchemaError(f"missing key '{key}'")
+    """Structural (JSON Schema, unknown keys rejected) then semantic checks.
+
+    Unknown keys and missing required sections raise SchemaError; nothing is silently defaulted.
+    """
+    validator = jsonschema.Draft202012Validator(_package_model_schema())
+    errors = sorted(validator.iter_errors(spec), key=lambda e: list(e.path))
+    if errors:
+        e = errors[0]
+        where = "/".join(str(p) for p in e.path) or "<root>"
+        raise SchemaError(f"{where}: {e.message}")
+
     names = [l["name"] for l in spec["layers"]]
     if len(set(names)) != len(names):
         raise SchemaError("layer names must be unique")
-    for l in spec["layers"]:
-        for key in ("name", "material", "thickness_um", "nz"):
-            if key not in l:
-                raise SchemaError(f"layer missing '{key}': {l}")
     Lx, Ly = spec["domain_um"]
     for s in spec["heat_sources"]:
         if s["layer"] not in names:
@@ -45,8 +57,6 @@ def validate_package_model(spec: dict) -> None:
         x0, y0, x1, y1 = s["rect_um"]
         if not (0 <= x0 < x1 <= Lx and 0 <= y0 < y1 <= Ly):
             raise SchemaError(f"heat source rect outside domain: {s}")
-        if s["power_W"] < 0:
-            raise SchemaError("power_W must be >= 0")
 
 
 def load_package_model(path: str) -> dict:

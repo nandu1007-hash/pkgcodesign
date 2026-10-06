@@ -9,7 +9,7 @@ description = "Open-source framework for system-level package co-design (thermo-
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "Apache-2.0" }
-dependencies = ["numpy>=1.23", "scipy>=1.10", "h5py>=3.8"]
+dependencies = ["numpy>=1.23", "scipy>=1.10", "h5py>=3.8", "jsonschema>=4.18"]
 
 [project.optional-dependencies]
 dev = ["pytest", "matplotlib"]
@@ -21,7 +21,7 @@ pkgcodesign = "pkgcodesign.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-pkgcodesign = ["data/*.json"]
+pkgcodesign = ["data/*.json", "schemas/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

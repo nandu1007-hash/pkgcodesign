@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pkgcodesign:package_model.v1",
+  "title": "xtco.package_model.v1",
+  "description": "Package-level thermo-mechanical model. Geometry in micrometres, temperatures in deg C. Unknown keys are rejected so that typos cannot silently fall back to defaults.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "domain_um", "mesh", "layers", "heat_sources", "boundary", "thermomech"],
+  "properties": {
+    "schema": {"const": "xtco.package_model.v1"},
+    "name": {"type": "string"},
+    "domain_um": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {"type": "number", "exclusiveMinimum": 0}
+    },
+    "mesh": {
+      "type": "object", "additionalProperties": false, "required": ["nx", "ny"],
+      "properties": {
+        "nx": {"type": "integer", "minimum": 1},
+        "ny": {"type": "integer", "minimum": 1}
+      }
+    },
+    "layers": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "material", "thickness_um", "nz"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "material": {"type": "string", "minLength": 1},
+          "thickness_um": {"type": "number", "exclusiveMinimum": 0},
+          "nz": {"type": "integer", "minimum": 1},
+          "tsv": {
+            "type": "object", "additionalProperties": false,
+            "required": ["material", "pitch_cells"],
+            "properties": {
+              "material": {"type": "string", "minLength": 1},
+              "pitch_cells": {"type": "integer", "minimum": 1},
+              "offset_cells": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "heat_sources": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["layer", "rect_um", "power_W"],
+        "properties": {
+          "name": {"type": "string"},
+          "layer": {"type": "string", "minLength": 1},
+          "cell_layer": {"enum": ["bottom", "top", "all"]},
+          "rect_um": {
+            "type": "array", "minItems": 4, "maxItems": 4,
+            "items": {"type": "number"}
+          },
+          "power_W": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "boundary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["t_ambient_C", "h_top", "h_bottom"],
+      "properties": {
+        "t_ambient_C": {"type": "number"},
+        "h_top": {"type": "number", "minimum": 0},
+        "h_bottom": {"type": "number", "minimum": 0}
+      }
+    },
+    "thermomech": {
+      "type": "object", "additionalProperties": false,
+      "required": ["t_ref_C", "t_reflow_C", "t_room_C"],
+      "properties": {
+        "t_ref_C": {"type": "number"},
+        "t_reflow_C": {"type": "number"},
+        "t_room_C": {"type": "number"}
+      }
+    }
+  }
+}

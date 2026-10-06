@@ -19,7 +19,7 @@ something runnable to extend.
 ## Quick start
 ```bash
 pip install -e ".[dev]"
-pytest -q                                   # 10 tests (energy balance, 1-D analytic, Timoshenko bilayer, ROM, I/O)
+pytest -q                                   # 20 tests (energy balance, 1-D analytic, Timoshenko bilayer, ROM, I/O, input validation)
 python examples/run_reference_case.py       # figures -> docs/figures
 pkgcodesign run examples/stacked_2tier_tsv.json --out op.h5
 pkgcodesign run examples/stacked_2tier_tsv.json --reflow --out reflow.h5
