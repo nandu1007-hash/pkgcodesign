@@ -68,11 +68,15 @@ class ThermalROM:
         return self.t_amb + self.V @ a
 
     def validate(self, n_test=20, scale_range=(0.2, 2.0), h_range=(1e3, 2e4), seed=123) -> dict:
+        """Held-out check against the full-order model. Samples match the training
+        distribution: scales uniform, h_top log-uniform (was linear, which over-weighted
+        the high-h end of the range)."""
         rng = np.random.default_rng(seed)
         p = len(self.sources)
         errs, t_full, t_rom = [], 0.0, 0.0
         for _ in range(n_test):
-            sc = rng.uniform(*scale_range, size=p); h = rng.uniform(*h_range)
+            sc = rng.uniform(*scale_range, size=p)
+            h = np.exp(rng.uniform(np.log(h_range[0]), np.log(h_range[1])))
             t0 = time.perf_counter(); Tf = self.full_solve(sc, h); t_full += time.perf_counter() - t0
             t0 = time.perf_counter(); Tr = self.predict(sc, h); t_rom += time.perf_counter() - t0
             errs.append(np.max(np.abs(Tf - Tr)))
