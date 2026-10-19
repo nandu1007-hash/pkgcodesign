@@ -123,8 +123,8 @@ def solve_mechanical(grid: StackGrid, T: np.ndarray, t_ref: float, pin: str = "3
     K = sp.coo_matrix((Ke.ravel(), (rows, cols)), shape=(3 * nn, 3 * nn)).tocsr()
 
     fe = fth_u[inv] * (alpha * dT)[:, None]
-    f = np.zeros(3 * nn)
-    np.add.at(f, dofs.ravel(), fe.ravel())
+    # vectorised scatter (np.add.at is ~10-50x slower and was the assembly hot spot)
+    f = np.bincount(dofs.ravel(), weights=fe.ravel(), minlength=3 * nn)
 
     # 3-2-1 constraints at bottom (k=0)
     A, B_, C = nid(0, 0, 0), nid(nx, 0, 0), nid(0, ny, 0)
