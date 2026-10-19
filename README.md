@@ -24,6 +24,7 @@ python examples/run_reference_case.py       # figures -> docs/figures
 pkgcodesign run examples/stacked_2tier_tsv.json --out op.h5
 pkgcodesign run examples/stacked_2tier_tsv.json --reflow --out reflow.h5
 pkgcodesign run examples/stacked_2tier_tsv.json --device-power examples/device_power_example.json
+pkgcodesign rom examples/stacked_2tier_tsv.json --out rom_report.json   # train + validate the thermal ROM
 ```
 
 ## Verification done so far

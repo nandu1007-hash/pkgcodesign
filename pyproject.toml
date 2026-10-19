@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pkgcodesign"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Open-source framework for system-level package co-design (thermo-mechanical FEM, materials DB, ROMs)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,6 +19,10 @@ pkgcodesign = "pkgcodesign.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+# single source of truth: pkgcodesign/__init__.py
+version = {attr = "pkgcodesign.__version__"}
 
 [tool.setuptools.package-data]
 pkgcodesign = ["data/*.json", "schemas/*.json"]
