@@ -7,6 +7,12 @@
 | `xtco.materials.v1`     | JSON | material property tables with `source` and `confidence` per entry |
 | `xtco.results.v1`       | HDF5 | `/mesh`, `/fields/{T,von_mises,u,...}`, `/scalars` attrs, embedded model JSON for provenance |
 
+## Result-file provenance (root attrs of `xtco.results.v1`)
+Each HDF5 results file is self-describing: `model_json` (exact input model), `materials_json`
+(the `xtco.materials.v1` table actually used, including any custom `--materials` DB), `python`,
+`pkgcodesign`, `numpy`, `scipy`, `git_commit` (best-effort; `GITHUB_SHA`/`GIT_COMMIT` env or
+`git rev-parse`, empty string when unavailable), and `name`.
+
 ## Conventions
 * Geometry in **micrometres** in JSON, **SI** inside the solver and in HDF5.
 * Temperatures in **deg C**; CTE in **ppm/K**; E in **GPa** (JSON only).

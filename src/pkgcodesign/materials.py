@@ -104,8 +104,12 @@ class MaterialDB:
     def names(self):
         return sorted(self._m)
 
+    def to_dict(self) -> dict:
+        """Round-trippable `xtco.materials.v1` document (same shape `from_dict` accepts)."""
+        return {"schema": MATERIALS_SCHEMA, "units": UNITS,
+                "materials": {n: {k: v for k, v in asdict(m).items() if k != "name"}
+                              for n, m in self._m.items()}}
+
     def to_json(self, path: str) -> None:
-        out = {"schema": MATERIALS_SCHEMA, "units": UNITS,
-               "materials": {n: {k: v for k, v in asdict(m).items() if k != "name"} for n, m in self._m.items()}}
         with open(path, "w") as f:
-            json.dump(out, f, indent=2)
+            json.dump(self.to_dict(), f, indent=2)

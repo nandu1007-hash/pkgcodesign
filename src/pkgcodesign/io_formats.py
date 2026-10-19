@@ -8,7 +8,9 @@ Schemas (documented in docs/DATA_FORMATS.md):
 from __future__ import annotations
 
 import json
+import os
 import platform
+import subprocess
 from importlib import resources
 from functools import lru_cache
 from typing import Optional
@@ -16,7 +18,10 @@ from typing import Optional
 import h5py
 import jsonschema
 import numpy as np
+import scipy
 
+from . import __version__
+from .materials import MaterialDB
 from .mesh import StackGrid
 
 PACKAGE_SCHEMA = "xtco.package_model.v1"
@@ -66,6 +71,20 @@ def load_package_model(path: str) -> dict:
     return spec
 
 
+def _git_commit() -> str:
+    """Best-effort repository commit for result provenance; "" when unavailable."""
+    for var in ("GITHUB_SHA", "GIT_COMMIT"):
+        sha = os.environ.get(var)
+        if sha:
+            return sha
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+                             timeout=2, cwd=os.path.dirname(os.path.abspath(__file__)))
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
 def merge_device_power(spec: dict, device: dict) -> dict:
     """Apply an xtco.device_power.v1 document (from Tracks 1/3) to a package model."""
     if device.get("schema") != DEVICE_SCHEMA:
@@ -79,12 +98,21 @@ def merge_device_power(spec: dict, device: dict) -> dict:
 
 
 def save_results_h5(path: str, grid: StackGrid, result: dict, spec: Optional[dict] = None) -> None:
+    """Write fields + scalars + provenance. The exact input model and the material
+    properties used are embedded so a result file is reproducible on its own."""
     with h5py.File(path, "w") as f:
         f.attrs["schema"] = RESULTS_SCHEMA
         f.attrs["python"] = platform.python_version()
+        f.attrs["pkgcodesign"] = __version__
+        f.attrs["numpy"] = np.__version__
+        f.attrs["scipy"] = scipy.__version__
+        f.attrs["git_commit"] = _git_commit()
         f.attrs["name"] = grid.name
         if spec is not None:
             f.attrs["model_json"] = json.dumps(spec)
+        # the materials actually used (grid may come from a custom --materials DB)
+        f.attrs["materials_json"] = json.dumps(
+            MaterialDB({m.name: m for m in grid.materials}).to_dict())
         g = f.create_group("mesh")
         g["x_edges"], g["y_edges"], g["z_edges"] = grid.x_edges, grid.y_edges, grid.z_edges
         g["material_id"] = grid.mat_id
@@ -108,10 +136,13 @@ def save_results_h5(path: str, grid: StackGrid, result: dict, spec: Optional[dic
 
 
 def load_results_h5(path: str) -> dict:
+    """Read a results file. `provenance` holds the root attrs (input model JSON,
+    materials used, library versions, git commit) recorded by `save_results_h5`."""
     out = {}
     with h5py.File(path, "r") as f:
         out["schema"] = f.attrs["schema"]
         out["fields"] = {k: v[...] for k, v in f["fields"].items()}
         out["scalars"] = dict(f["scalars"].attrs)
         out["mesh"] = {k: v[...] for k, v in f["mesh"].items()}
+        out["provenance"] = {k: v for k, v in f.attrs.items() if k != "schema"}
     return out
